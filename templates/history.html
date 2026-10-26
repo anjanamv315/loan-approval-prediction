@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Prediction History Log{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card card-custom">
+            <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <span class="badge bg-primary text-uppercase px-3 py-1 mb-2">SQLite Relational Archive</span>
+                    <h2 class="fw-bold text-dark mb-1">
+                        <i class="bi bi-clock-history text-primary me-2"></i>Application Prediction History Log
+                    </h2>
+                    <p class="text-muted mb-0">
+                        All previous predictions submitted through the interface are persisted in <code>loan_history.db</code>.
+                    </p>
+                </div>
+                <a href="{{ url_for('predict') }}" class="btn btn-primary px-4">
+                    <i class="bi bi-plus-circle me-1"></i> New Prediction
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        {% if not records %}
+            <div class="card card-custom p-5 text-center">
+                <div class="display-3 text-muted mb-3"><i class="bi bi-inbox"></i></div>
+                <h4 class="fw-bold text-dark">No Predictions Recorded Yet</h4>
+                <p class="text-muted mb-4">You have not submitted any loan applications to the system yet.</p>
+                <div>
+                    <a href="{{ url_for('predict') }}" class="btn btn-primary px-4">
+                        <i class="bi bi-calculator me-1"></i> Make Your First Prediction
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div class="card card-custom">
+                <div class="card-header-custom d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-database me-2 text-primary"></i>Stored Historical Records ({{ records|length }} Total)</span>
+                    <small class="text-muted">Ordered reverse-chronologically</small>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-custom table-hover mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Timestamp</th>
+                                    <th>Demographics</th>
+                                    <th>Applicant Income</th>
+                                    <th>Loan Requested</th>
+                                    <th>Credit Record</th>
+                                    <th>LogReg</th>
+                                    <th>DecTree</th>
+                                    <th>RandForest</th>
+                                    <th>Winner Verdict</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in records %}
+                                    <tr>
+                                        <td><strong>#{{ row.id }}</strong></td>
+                                        <td><small class="text-muted">{{ row.timestamp }}</small></td>
+                                        <td>
+                                            <div class="small">
+                                                <strong>{{ row.gender }}</strong>, {{ 'Married' if row.married == 'Yes' else 'Single' }}<br>
+                                                <span class="text-muted">Dep: {{ row.dependents }} | {{ row.education }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <strong>${{ row.applicant_income|int }}</strong>
+                                            {% if row.coapplicant_income > 0 %}
+                                                <div class="small text-muted">+${{ row.coapplicant_income|int }} co-app</div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <strong>${{ (row.loan_amount * 1000)|int }}</strong>
+                                            <div class="small text-muted">{{ row.loan_amount_term|int }} mos &bull; {{ row.property_area }}</div>
+                                        </td>
+                                        <td>
+                                            {% if row.credit_history == 1.0 %}
+                                                <span class="badge bg-success">1.0 Good</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">0.0 Poor</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if row.lr_prediction == 'Approved' %}
+                                                <span class="badge bg-success-subtle text-success border border-success">Approved ({{ row.lr_probability }}%)</span>
+                                            {% else %}
+                                                <span class="badge bg-danger-subtle text-danger border border-danger">Rejected ({{ row.lr_probability }}%)</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if row.dt_prediction == 'Approved' %}
+                                                <span class="badge bg-success-subtle text-success border border-success">Approved ({{ row.dt_probability }}%)</span>
+                                            {% else %}
+                                                <span class="badge bg-danger-subtle text-danger border border-danger">Rejected ({{ row.dt_probability }}%)</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if row.rf_prediction == 'Approved' %}
+                                                <span class="badge bg-success-subtle text-success border border-success">Approved ({{ row.rf_probability }}%)</span>
+                                            {% else %}
+                                                <span class="badge bg-danger-subtle text-danger border border-danger">Rejected ({{ row.rf_probability }}%)</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if row.selected_model_prediction == 'Approved' %}
+                                                <span class="badge bg-success px-2 py-1">
+                                                    <i class="bi bi-check-circle me-1"></i>Approved
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-danger px-2 py-1">
+                                                    <i class="bi bi-x-circle me-1"></i>Rejected
+                                                </span>
+                                            {% endif %}
+                                            <div class="small text-muted mt-1">{{ row.selected_model_name }}</div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Educational Disclaimer Banner -->
+    <div class="col-12 mt-4">
+        <div class="disclaimer-banner">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-shield-lock-fill fs-3"></i>
+                <div>
+                    <strong>Data Privacy & Academic Storage Notice:</strong>
+                    The historical records shown above are logged locally in the embedded SQLite database (<code>loan_history.db</code>) strictly for academic project review, viva demonstration, and audit trail validation.
+                    No personally identifiable data is sent over the Internet.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+
+{% block title %}Prediction Results - Loan Evaluation{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-11">
+        
+        <!-- Header Banner -->
+        <div class="card card-custom mb-4">
+            <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <span class="badge bg-secondary mb-2">Record #{{ record_id }} &bull; Logged at {{ timestamp }}</span>
+                    <h2 class="fw-bold text-dark mb-0">Multi-Algorithm Loan Prediction Results</h2>
+                    <p class="text-muted mb-0">Evaluation generated across all 3 trained supervised classification models.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('predict') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-plus-circle me-1"></i> New Application
+                    </a>
+                    <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-clock-history me-1"></i> View History
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selected Model Verdict Callout -->
+        <div class="card card-custom mb-4 border-2 {% if selected_model_prediction == 'Approved' %}border-success{% else %}border-danger{% endif %} shadow-sm">
+            <div class="card-body p-4 text-center">
+                <span class="badge bg-primary text-uppercase px-3 py-1 mb-2">Selected Primary Model (Based on 5-Fold CV)</span>
+                <h3 class="fw-bold mb-2">{{ selected_model_name }}</h3>
+                <div class="my-3">
+                    {% if selected_model_prediction == 'Approved' %}
+                        <span class="badge-approved fs-4 px-4 py-2">
+                            <i class="bi bi-check-circle-fill"></i> Loan Likely to be APPROVED
+                        </span>
+                    {% else %}
+                        <span class="badge-rejected fs-4 px-4 py-2">
+                            <i class="bi bi-x-circle-fill"></i> Loan Likely to be REJECTED
+                        </span>
+                    {% endif %}
+                </div>
+                <p class="text-muted mb-0 max-w-700 mx-auto">
+                    The chosen optimal algorithm (<strong>{{ selected_model_name }}</strong>) estimates an approval likelihood of 
+                    <strong>{{ probabilities[selected_model_name] }}%</strong> based on the submitted demographic and financial parameters.
+                </p>
+            </div>
+        </div>
+
+        <!-- Algorithm Comparison Cards -->
+        <h4 class="fw-bold text-dark mb-3"><i class="bi bi-cpu text-primary me-2"></i>Algorithm Comparison for Submitted Profile</h4>
+        <div class="row g-4 mb-4">
+            
+            <!-- Logistic Regression -->
+            <div class="col-md-4">
+                <div class="model-pred-card h-100 {% if selected_model_name == 'Logistic Regression' %}selected-model{% endif %}">
+                    {% if selected_model_name == 'Logistic Regression' %}
+                        <div class="winner-ribbon">Selected Model</div>
+                    {% endif %}
+                    <h5 class="fw-bold text-dark mb-1">Logistic Regression</h5>
+                    <p class="small text-muted mb-3">Linear Generalized Classifier</p>
+                    <div class="mb-3">
+                        {% if predictions['Logistic Regression'] == 'Approved' %}
+                            <span class="badge-approved"><i class="bi bi-check-circle-fill"></i> Approved</span>
+                        {% else %}
+                            <span class="badge-rejected"><i class="bi bi-x-circle-fill"></i> Rejected</span>
+                        {% endif %}
+                    </div>
+                    <div class="bg-light p-3 rounded-3 mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small text-muted">Estimated Approval Prob:</span>
+                            <span class="small fw-bold">{{ probabilities['Logistic Regression'] }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar {% if predictions['Logistic Regression'] == 'Approved' %}bg-success{% else %}bg-danger{% endif %}"
+                                 role="progressbar" style="width: {{ probabilities['Logistic Regression'] }}%;"></div>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block">
+                        Calculates likelihood via log-odds sigmoid activation across normalized linear coefficients.
+                    </small>
+                </div>
+            </div>
+
+            <!-- Decision Tree -->
+            <div class="col-md-4">
+                <div class="model-pred-card h-100 {% if selected_model_name == 'Decision Tree' %}selected-model{% endif %}">
+                    {% if selected_model_name == 'Decision Tree' %}
+                        <div class="winner-ribbon">Selected Model</div>
+                    {% endif %}
+                    <h5 class="fw-bold text-dark mb-1">Decision Tree</h5>
+                    <p class="small text-muted mb-3">Rule-Based Recursive Partition</p>
+                    <div class="mb-3">
+                        {% if predictions['Decision Tree'] == 'Approved' %}
+                            <span class="badge-approved"><i class="bi bi-check-circle-fill"></i> Approved</span>
+                        {% else %}
+                            <span class="badge-rejected"><i class="bi bi-x-circle-fill"></i> Rejected</span>
+                        {% endif %}
+                    </div>
+                    <div class="bg-light p-3 rounded-3 mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small text-muted">Leaf Purity Likelihood:</span>
+                            <span class="small fw-bold">{{ probabilities['Decision Tree'] }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar {% if predictions['Decision Tree'] == 'Approved' %}bg-success{% else %}bg-danger{% endif %}"
+                                 role="progressbar" style="width: {{ probabilities['Decision Tree'] }}%;"></div>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block">
+                        Traverses regularized binary branch nodes (depth 4) based on Gini impurity thresholds.
+                    </small>
+                </div>
+            </div>
+
+            <!-- Random Forest -->
+            <div class="col-md-4">
+                <div class="model-pred-card h-100 {% if selected_model_name == 'Random Forest' %}selected-model{% endif %}">
+                    {% if selected_model_name == 'Random Forest' %}
+                        <div class="winner-ribbon">Selected Model</div>
+                    {% endif %}
+                    <h5 class="fw-bold text-dark mb-1">Random Forest</h5>
+                    <p class="small text-muted mb-3">100-Tree Bagged Ensemble</p>
+                    <div class="mb-3">
+                        {% if predictions['Random Forest'] == 'Approved' %}
+                            <span class="badge-approved"><i class="bi bi-check-circle-fill"></i> Approved</span>
+                        {% else %}
+                            <span class="badge-rejected"><i class="bi bi-x-circle-fill"></i> Rejected</span>
+                        {% endif %}
+                    </div>
+                    <div class="bg-light p-3 rounded-3 mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small text-muted">Ensemble Vote Consensus:</span>
+                            <span class="small fw-bold">{{ probabilities['Random Forest'] }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar {% if predictions['Random Forest'] == 'Approved' %}bg-success{% else %}bg-danger{% endif %}"
+                                 role="progressbar" style="width: {{ probabilities['Random Forest'] }}%;"></div>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block">
+                        Aggregates predictions of 100 decorrelated trees trained on bootstrap resamples.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submitted Application Summary Table -->
+        <div class="card card-custom mb-4">
+            <div class="card-header-custom">
+                <i class="bi bi-card-checklist text-primary me-2"></i> Applicant Parameter Summary
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th>Parameter Name</th>
+                                <th>Submitted Value</th>
+                                <th>Parameter Name</th>
+                                <th>Submitted Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Gender</strong></td>
+                                <td>{{ applicant_data.Gender }}</td>
+                                <td><strong>Marital Status</strong></td>
+                                <td>{{ applicant_data.Married }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Dependents</strong></td>
+                                <td>{{ applicant_data.Dependents }}</td>
+                                <td><strong>Education</strong></td>
+                                <td>{{ applicant_data.Education }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Self Employed</strong></td>
+                                <td>{{ applicant_data.Self_Employed }}</td>
+                                <td><strong>Applicant Income</strong></td>
+                                <td>${{ applicant_data.ApplicantIncome }} / month</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Co-applicant Income</strong></td>
+                                <td>${{ applicant_data.CoapplicantIncome }} / month</td>
+                                <td><strong>Requested Loan Amount</strong></td>
+                                <td>${{ applicant_data.LoanAmount * 1000 }} ({{ applicant_data.LoanAmount }}k)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Loan Term</strong></td>
+                                <td>{{ applicant_data.Loan_Amount_Term }} Months</td>
+                                <td><strong>Credit History</strong></td>
+                                <td>
+                                    {% if applicant_data.Credit_History == 1.0 %}
+                                        <span class="badge bg-success">1.0 - Meets Guidelines</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">0.0 - Does Not Meet Guidelines</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Property Area</strong></td>
+                                <td>{{ applicant_data.Property_Area }}</td>
+                                <td><strong>Database Record ID</strong></td>
+                                <td>#{{ record_id }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{{ url_for('predict') }}" class="btn btn-primary px-4">
+                <i class="bi bi-arrow-left me-1"></i> Submit Another Application
+            </a>
+            <a href="{{ url_for('comparison') }}" class="btn btn-outline-info px-4">
+                <i class="bi bi-bar-chart-line me-1"></i> View Overall Model Comparison & Metrics
+            </a>
+        </div>
+
+        <!-- Educational Disclaimer Banner -->
+        <div class="disclaimer-banner">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-shield-exclamation fs-3"></i>
+                <div>
+                    <strong>Disclaimer on Model Probabilities:</strong>
+                    The displayed probability metrics represent model-estimated class likelihoods calculated by the scikit-learn estimators. 
+                    They reflect statistical patterns in the training data and do not constitute a real-world financial guarantee, lending commitment, or credit score.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

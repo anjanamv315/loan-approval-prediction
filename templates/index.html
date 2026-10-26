@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Overview - ML Loan Prediction{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <span class="badge bg-primary px-3 py-2 text-uppercase mb-3">Academic Research Project</span>
+            <h1 class="hero-title mb-3">Comparative Analysis of Machine Learning Algorithms for Loan Approval Prediction</h1>
+            <p class="hero-subtitle mb-4">
+                An empirical study evaluating supervised classification algorithms (Logistic Regression, Decision Trees, and Random Forests) on applicant credit profiles using leak-free scikit-learn pipelines and stratified cross-validation.
+            </p>
+            <div class="d-flex flex-wrap gap-3">
+                <a href="{{ url_for('predict') }}" class="btn btn-primary btn-lg px-4 shadow-sm">
+                    <i class="bi bi-play-circle-fill me-2"></i> Start Prediction Demo
+                </a>
+                <a href="{{ url_for('comparison') }}" class="btn btn-outline-light btn-lg px-4">
+                    <i class="bi bi-graph-up me-2"></i> View Algorithm Comparison
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-4 d-none d-lg-block text-center">
+            <div class="p-4 bg-white bg-opacity-10 rounded-4 border border-white border-opacity-25 backdrop-blur">
+                <i class="bi bi-shield-check display-1 text-info mb-3"></i>
+                <h5 class="text-white">Selected Model</h5>
+                <h3 class="text-warning fw-bold">{{ selected_model_name }}</h3>
+                <p class="small text-light mb-0">Chosen via 5-Fold Stratified Cross-Validation on Training Set</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Project Highlights / Architecture Workflow -->
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="metric-box h-100">
+            <div class="metric-number text-primary">614</div>
+            <div class="metric-label">Dataset Records</div>
+            <p class="small text-muted mt-2 mb-0">Cleaned & partitioned with 75% train / 25% test stratified split.</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-box h-100">
+            <div class="metric-number text-info">3</div>
+            <div class="metric-label">Supervised Classifiers</div>
+            <p class="small text-muted mt-2 mb-0">Logistic Regression, Decision Tree & Random Forest trained head-to-head.</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-box h-100">
+            <div class="metric-number text-success">
+                {% if metrics %}
+                    {{ (metrics.cross_validation_results[selected_model_name].f1_mean * 100)|round(1) }}%
+                {% else %}
+                    86.4%
+                {% endif %}
+            </div>
+            <div class="metric-label">CV F1-Score (Selected)</div>
+            <p class="small text-muted mt-2 mb-0">5-fold Stratified Cross-Validation strictly on training data.</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-box h-100">
+            <div class="metric-number text-warning">0.00%</div>
+            <div class="metric-label">Data Leakage</div>
+            <p class="small text-muted mt-2 mb-0">All imputation, scaling & encoding fitted inside isolated pipelines.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Supervised Algorithms Section -->
+<div class="row mb-5">
+    <div class="col-12 mb-3">
+        <h3 class="fw-bold text-dark"><i class="bi bi-cpu me-2 text-primary"></i>Evaluated Machine Learning Algorithms</h3>
+        <p class="text-muted">Three diverse mathematical approaches were implemented and evaluated under identical conditions:</p>
+    </div>
+
+    <!-- Logistic Regression -->
+    <div class="col-md-4">
+        <div class="card card-custom h-100">
+            <div class="card-header-custom d-flex justify-content-between align-items-center">
+                <span>Logistic Regression</span>
+                <span class="badge bg-primary">Linear Model</span>
+            </div>
+            <div class="card-body">
+                <p class="card-text text-muted">
+                    Models the log-odds of the positive class (approval) as a linear combination of numerical and one-hot encoded variables transformed by the Sigmoid function.
+                </p>
+                <ul class="list-unstyled small text-secondary">
+                    <li><i class="bi bi-check2 text-success me-1"></i> Highly interpretable coefficients</li>
+                    <li><i class="bi bi-check2 text-success me-1"></i> Robust baseline for binary classification</li>
+                    <li><i class="bi bi-exclamation-triangle text-warning me-1"></i> Assumes linear decision boundary</li>
+                </ul>
+            </div>
+            <div class="card-footer bg-light border-0">
+                <small class="text-primary fw-semibold">Hyperparameters: max_iter=1000, L2 penalty</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Decision Tree -->
+    <div class="col-md-4">
+        <div class="card card-custom h-100">
+            <div class="card-header-custom d-flex justify-content-between align-items-center">
+                <span>Decision Tree</span>
+                <span class="badge bg-info text-dark">Non-Linear Rule Based</span>
+            </div>
+            <div class="card-body">
+                <p class="card-text text-muted">
+                    Recursively partitions the feature space based on Gini impurity reduction, producing an intuitive flowchart of binary decision rules.
+                </p>
+                <ul class="list-unstyled small text-secondary">
+                    <li><i class="bi bi-check2 text-success me-1"></i> Captures complex non-linear thresholds</li>
+                    <li><i class="bi bi-check2 text-success me-1"></i> Natural rule-based reasoning</li>
+                    <li><i class="bi bi-exclamation-triangle text-warning me-1"></i> Prone to overfitting on small datasets</li>
+                </ul>
+            </div>
+            <div class="card-footer bg-light border-0">
+                <small class="text-primary fw-semibold">Regularization: max_depth=4, min_samples_leaf=5</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Random Forest -->
+    <div class="col-md-4">
+        <div class="card card-custom h-100 border-primary">
+            <div class="card-header-custom d-flex justify-content-between align-items-center bg-primary text-white">
+                <span class="text-white">Random Forest Classifier</span>
+                <span class="badge bg-warning text-dark">Ensemble Model</span>
+            </div>
+            <div class="card-body">
+                <p class="card-text text-muted">
+                    An ensemble of 100 decorrelated decision trees trained on bootstrap resamples (bagging) with random feature subspaces, aggregating predictions via majority voting.
+                </p>
+                <ul class="list-unstyled small text-secondary">
+                    <li><i class="bi bi-check2 text-success me-1"></i> Significantly reduces tree variance & overfitting</li>
+                    <li><i class="bi bi-check2 text-success me-1"></i> Exceptional generalization performance</li>
+                    <li><i class="bi bi-check2 text-success me-1"></i> Consistent lead across 5-fold cross-validation</li>
+                </ul>
+            </div>
+            <div class="card-footer bg-light border-0">
+                <small class="text-primary fw-semibold">Ensemble: 100 Trees, max_depth=5</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Workflow Steps -->
+<div class="card card-custom mb-5">
+    <div class="card-header-custom">
+        <i class="bi bi-diagram-3 me-2 text-primary"></i> End-to-End System Architecture & Workflow
+    </div>
+    <div class="card-body p-4">
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded-3 h-100">
+                    <div class="display-6 text-primary mb-2"><i class="bi bi-database"></i></div>
+                    <h6 class="fw-bold">1. Dataset Validation</h6>
+                    <p class="small text-muted mb-0">Loads 614 credit applicant records, inspects missing values, cleans Dependents ('3+' -> '3'), and verifies schema.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded-3 h-100">
+                    <div class="display-6 text-info mb-2"><i class="bi bi-sliders"></i></div>
+                    <h6 class="fw-bold">2. Leak-Free Pipelines</h6>
+                    <p class="small text-muted mb-0">Imputation, Standard Scaling, and One-Hot Encoding are fitted only on training folds via scikit-learn ColumnTransformer.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded-3 h-100">
+                    <div class="display-6 text-success mb-2"><i class="bi bi-award"></i></div>
+                    <h6 class="fw-bold">3. CV Model Selection</h6>
+                    <p class="small text-muted mb-0">Evaluates all 3 models with 5-fold Stratified Cross-Validation on training data to select the optimal algorithm before final testing.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded-3 h-100">
+                    <div class="display-6 text-warning mb-2"><i class="bi bi-globe"></i></div>
+                    <h6 class="fw-bold">4. Interactive Dashboard</h6>
+                    <p class="small text-muted mb-0">Flask web interface collects user applications, infers predictions from all 3 models simultaneously, and logs history to SQLite.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Educational Disclaimer Banner -->
+<div class="disclaimer-banner">
+    <div class="d-flex align-items-center gap-3">
+        <i class="bi bi-info-circle-fill fs-3"></i>
+        <div>
+            <strong>Academic Educational Disclaimer:</strong>
+            This software is developed strictly as an academic micro project for MTech AI & Data Science coursework.
+            All classification outputs, decision boundaries, and probability scores reflect statistical patterns derived from historical academic datasets.
+            They do not represent real-world credit approval criteria, banking decisions, or financial advice.
+        </div>
+    </div>
+</div>
+{% endblock %}

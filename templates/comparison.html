@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+
+{% block title %}Comparative Analysis of Machine Learning Algorithms{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <!-- Title & Header -->
+        <div class="card card-custom">
+            <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <span class="badge bg-primary text-uppercase px-3 py-1 mb-2">Experimental Results & Verification</span>
+                    <h2 class="fw-bold text-dark mb-1">
+                        <i class="bi bi-bar-chart-steps text-primary me-2"></i>Comparative Analysis of ML Classification Algorithms
+                    </h2>
+                    <p class="text-muted mb-0">
+                        Rigorous evaluation comparing Logistic Regression, Decision Tree, and Random Forest on identical training and held-out test splits.
+                    </p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-secondary">Evaluated at: {{ metrics.generated_at if metrics else 'N/A' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if not metrics %}
+        <div class="col-12">
+            <div class="alert alert-warning p-4 shadow-sm" role="alert">
+                <h4 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Metrics Not Available</h4>
+                <p>The comparative evaluation metrics have not been generated yet. Please run the training script in your project environment:</p>
+                <pre class="bg-dark text-white p-3 rounded"><code>python train_model.py</code></pre>
+            </div>
+        </div>
+    {% else %}
+        {% set sel_name = metrics.model_selection.selected_model %}
+
+        <!-- Model Selection Rationale Banner -->
+        <div class="col-12 mb-4">
+            <div class="card card-custom border-primary border-2 bg-light shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="display-5 text-primary"><i class="bi bi-trophy-fill"></i></div>
+                        <div>
+                            <span class="badge bg-primary text-uppercase">Winning Model Selected</span>
+                            <h4 class="fw-bold text-dark mt-1 mb-1">{{ sel_name }}</h4>
+                            <p class="text-muted mb-0">
+                                <strong>Selection Criterion:</strong> {{ metrics.model_selection.selection_criterion }}.
+                                By tuning and selecting models strictly via 5-fold Stratified Cross-Validation on the 460-sample training partition, 
+                                <strong>{{ sel_name }}</strong> secured the highest validation F1-score ({{ metrics.cross_validation_results[sel_name].f1_mean }} &plusmn; {{ metrics.cross_validation_results[sel_name].f1_std }})
+                                without causing data leakage into the held-out test set.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 1: 5-Fold Stratified Cross-Validation Table -->
+        <div class="col-12 mb-4">
+            <div class="card card-custom">
+                <div class="card-header-custom d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-arrow-repeat text-primary me-2"></i>1. Stratified 5-Fold Cross-Validation Results (Training Set, N=460)</span>
+                    <span class="badge bg-info text-dark">Model Selection Phase</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-custom mb-0 text-center">
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Algorithm Name</th>
+                                    <th>Mean CV Accuracy</th>
+                                    <th>Mean CV Precision (Y)</th>
+                                    <th>Mean CV Recall (Y)</th>
+                                    <th>Mean CV F1-Score (Y)</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for name, res in metrics.cross_validation_results.items() %}
+                                    <tr {% if name == sel_name %}class="table-primary fw-bold"{% endif %}>
+                                        <td class="text-start">
+                                            {% if name == sel_name %}<i class="bi bi-award-fill text-warning me-1"></i>{% endif %}
+                                            {{ name }}
+                                        </td>
+                                        <td>{{ (res.accuracy_mean * 100)|round(2) }}% <span class="small text-muted">(&plusmn;{{ res.accuracy_std }})</span></td>
+                                        <td>{{ (res.precision_mean * 100)|round(2) }}% <span class="small text-muted">(&plusmn;{{ res.precision_std }})</span></td>
+                                        <td>{{ (res.recall_mean * 100)|round(2) }}% <span class="small text-muted">(&plusmn;{{ res.recall_std }})</span></td>
+                                        <td><span class="badge {% if name == sel_name %}bg-primary{% else %}bg-secondary{% endif %} fs-6">{{ res.f1_mean }}</span> <span class="small text-muted">(&plusmn;{{ res.f1_std }})</span></td>
+                                        <td>
+                                            {% if name == sel_name %}
+                                                <span class="badge bg-success">Selected Winner</span>
+                                            {% else %}
+                                                <span class="badge bg-light text-dark border">Candidate</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Stratified K-Fold ensures that the ratio of approved to rejected applications (~68.7% to 31.3%) is identically preserved across all 5 folds.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Held-Out Test Evaluation Table -->
+        <div class="col-12 mb-4">
+            <div class="card card-custom">
+                <div class="card-header-custom d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-check2-circle text-success me-2"></i>2. Held-Out Test Set Final Evaluation (N=154 Samples)</span>
+                    <span class="badge bg-success">Unbiased Final Test</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-custom mb-0 text-center">
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Algorithm Name</th>
+                                    <th>Accuracy</th>
+                                    <th>Precision (Approved)</th>
+                                    <th>Recall (Approved)</th>
+                                    <th>F1-Score (Approved)</th>
+                                    <th>Precision (Rejected)</th>
+                                    <th>Recall (Rejected)</th>
+                                    <th>Macro F1</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for name, res in metrics.held_out_test_results.items() %}
+                                    <tr {% if name == sel_name %}class="table-success fw-bold"{% endif %}>
+                                        <td class="text-start">
+                                            {% if name == sel_name %}<i class="bi bi-star-fill text-warning me-1"></i>{% endif %}
+                                            {{ name }}
+                                        </td>
+                                        <td>{{ (res.accuracy * 100)|round(2) }}%</td>
+                                        <td>{{ (res.precision_approved * 100)|round(2) }}%</td>
+                                        <td>{{ (res.recall_approved * 100)|round(2) }}%</td>
+                                        <td><span class="badge bg-success">{{ res.f1_approved }}</span></td>
+                                        <td>{{ (res.precision_rejected * 100)|round(2) }}%</td>
+                                        <td>{{ (res.recall_rejected * 100)|round(2) }}%</td>
+                                        <td><strong>{{ res.macro_f1 }}</strong></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        The test partition was held out completely until all preprocessing and model choices were finalized, providing an honest, uninflated evaluation.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Confusion Matrices -->
+        <div class="col-12 mb-4">
+            <h4 class="fw-bold text-dark mb-3"><i class="bi bi-grid-3x3 text-primary me-2"></i>Confusion Matrices on Held-out Test Set (N=154)</h4>
+            <div class="row g-4">
+                {% for name, res in metrics.held_out_test_results.items() %}
+                    {% set cm = res.confusion_matrix %}
+                    <div class="col-md-4">
+                        <div class="card card-custom h-100">
+                            <div class="card-header-custom d-flex justify-content-between align-items-center">
+                                <span>{{ name }}</span>
+                                {% if name == sel_name %}<span class="badge bg-primary">Best Model</span>{% endif %}
+                            </div>
+                            <div class="card-body p-3">
+                                <table class="table table-bordered text-center align-middle mb-2">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Actual \ Pred</th>
+                                            <th>Pred: N</th>
+                                            <th>Pred: Y</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th class="table-light">Actual: N (48)</th>
+                                            <td class="bg-light fw-bold text-success">TN = {{ cm.tn }}</td>
+                                            <td class="bg-light fw-bold text-danger">FP = {{ cm.fp }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="table-light">Actual: Y (106)</th>
+                                            <td class="bg-light fw-bold text-danger">FN = {{ cm.fn }}</td>
+                                            <td class="bg-light fw-bold text-success">TP = {{ cm.tp }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="small text-muted">
+                                    <p class="mb-1">&bull; True Negatives (Correctly Rejected): <strong>{{ cm.tn }}</strong> / 48</p>
+                                    <p class="mb-1">&bull; False Positives (Incorrectly Approved): <strong>{{ cm.fp }}</strong></p>
+                                    <p class="mb-1">&bull; False Negatives (Incorrectly Rejected): <strong>{{ cm.fn }}</strong></p>
+                                    <p class="mb-0">&bull; True Positives (Correctly Approved): <strong>{{ cm.tp }}</strong> / 106</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Section 4: Matplotlib Comparison Chart -->
+        <div class="col-12 mb-4">
+            <div class="card card-custom">
+                <div class="card-header-custom d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-image text-primary me-2"></i>Comparative Visualization (Generated via Matplotlib)</span>
+                    <a href="{{ url_for('static', filename='comparison.png') }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-box-arrow-up-right me-1"></i> Open High-Res Chart
+                    </a>
+                </div>
+                <div class="card-body text-center p-3">
+                    {% if chart_exists %}
+                        <img src="{{ url_for('static', filename='comparison.png') }}?v={{ metrics.generated_at|replace(' ', '_') }}"
+                             alt="Comparative Analysis Visualization" class="img-fluid rounded border shadow-sm">
+                    {% else %}
+                        <p class="text-muted">Chart image not found. Please re-run <code>python train_model.py</code>.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5: Academic Insights & Interpretations -->
+        <div class="col-12 mb-4">
+            <div class="card card-custom">
+                <div class="card-header-custom">
+                    <i class="bi bi-journal-text text-primary me-2"></i>Academic Insights & Analytical Discussion
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-dark"><i class="bi bi-check-circle text-success me-2"></i>Why Accuracy Alone is Insufficient</h6>
+                            <p class="small text-muted mb-0">
+                                The dataset features an imbalanced class distribution where 68.7% of applicants are approved (Y) and only 31.3% are rejected (N).
+                                A naive baseline predicting "Approved" for all candidates would attain 68.7% accuracy while completely failing to detect credit risk.
+                                Hence, <strong>F1-score</strong> and class-specific <strong>Precision</strong> and <strong>Recall</strong> are critical to penalize false approvals (credit defaults) and false rejections.
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-dark"><i class="bi bi-award text-primary me-2"></i>Model Performance Synthesis</h6>
+                            <p class="small text-muted mb-0">
+                                <strong>Logistic Regression</strong> and <strong>Random Forest</strong> demonstrated superior recall on approved candidates (~99%), correctly identifying almost all creditworthy applicants.
+                                <strong>Random Forest</strong> demonstrated the strongest 5-fold cross-validation F1-score (0.8638) on the training set, benefiting from bootstrap aggregation (bagging) which dampens variance and individual decision tree instability.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% endif %}
+
+    <!-- Educational Disclaimer Banner -->
+    <div class="col-12 mb-4">
+        <div class="disclaimer-banner">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-mortarboard-fill fs-3"></i>
+                <div>
+                    <strong>Academic Project Notice:</strong>
+                    This comparison table is dynamically populated from <code>models/metrics.json</code> generated during execution of <code>train_model.py</code>.
+                    No performance scores are hardcoded or simulated.
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

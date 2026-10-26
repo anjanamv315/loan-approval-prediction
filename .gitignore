@@ -1,0 +1,40 @@
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# SQLite Database (generated locally)
+*.db
+*.sqlite3
+loan_history.db
+
+# Flask session / environment secrets
+.env
+instance/
+.webassets-cache
+
+# IDE and Editor configurations
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Output models and generated metrics (can be regenerated with train_model.py)
+# Uncomment the lines below if you do not want to track trained artifacts in git:
+# models/
+# static/comparison.png

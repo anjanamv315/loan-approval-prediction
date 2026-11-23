@@ -70,13 +70,13 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <strong>${{ row.applicant_income|int }}</strong>
+                                            <strong>₹{{ row.applicant_income|int }}</strong>
                                             {% if row.coapplicant_income > 0 %}
-                                                <div class="small text-muted">+${{ row.coapplicant_income|int }} co-app</div>
+                                                <div class="small text-muted">+₹{{ row.coapplicant_income|int }} co-app</div>
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <strong>${{ (row.loan_amount * 1000)|int }}</strong>
+                                            <strong>₹{{ (row.loan_amount * 1000)|int }}</strong>
                                             <div class="small text-muted">{{ row.loan_amount_term|int }} mos &bull; {{ row.property_area }}</div>
                                         </td>
                                         <td>

@@ -281,8 +281,8 @@ http://127.0.0.1:5000
 ## 13. Application Usage Walkthrough
 1. **Home Page (`/`):** Review the project objectives, architecture, algorithm overviews, and current selected model.
 2. **Predict Page (`/predict`):** Fill out applicant details:
-   - *Example Profile A (Approved):* Male, Married=Yes, Dependents=1, Education=Graduate, Self_Employed=No, ApplicantIncome=6000, CoapplicantIncome=2000, LoanAmount=140 ($140k), Term=360, Credit_History=1.0 (Meets Guidelines), Property_Area=Semiurban.
-   - *Example Profile B (Rejected):* Female, Married=No, Dependents=0, Education=Not Graduate, Self_Employed=Yes, ApplicantIncome=1500, CoapplicantIncome=0, LoanAmount=250 ($250k), Term=360, Credit_History=0.0 (Does Not Meet Guidelines), Property_Area=Rural.
+   - *Example Profile A (Approved):* Male, Married=Yes, Dependents=1, Education=Graduate, Self_Employed=No, ApplicantIncome=60000, CoapplicantIncome=20000, LoanAmount=140 (₹140k / ₹1,40,000), Term=360, Credit_History=1.0 (Meets Guidelines), Property_Area=Semiurban.
+   - *Example Profile B (Rejected):* Female, Married=No, Dependents=0, Education=Not Graduate, Self_Employed=Yes, ApplicantIncome=15000, CoapplicantIncome=0, LoanAmount=250 (₹250k / ₹2,50,000), Term=360, Credit_History=0.0 (Does Not Meet Guidelines), Property_Area=Rural.
 3. **Results Page (`/predict` POST):** Review real-time predictions from Logistic Regression, Decision Tree, and Random Forest along with model-estimated probabilities and database record ID.
 4. **Model Comparison (`/comparison`):** Examine the 5-fold cross-validation table, held-out test evaluation table, confusion matrices, and the Matplotlib visualization chart.
 5. **Prediction History (`/history`):** Inspect previous submissions archived in reverse chronological order in `loan_history.db`.

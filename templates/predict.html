@@ -106,22 +106,22 @@
                         <div class="row g-3">
                             <!-- Applicant Income -->
                             <div class="col-md-6">
-                                <label for="ApplicantIncome" class="form-label">Applicant Monthly Income (USD / Standard Units) <span class="text-danger">*</span></label>
+                                <label for="ApplicantIncome" class="form-label">Applicant Monthly Income (INR ₹) <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <span class="input-group-text">$</span>
+                                    <span class="input-group-text">₹</span>
                                     <input type="number" step="any" min="0" class="form-control" id="ApplicantIncome" name="ApplicantIncome"
-                                           placeholder="e.g. 5000" value="{{ form_values.get('ApplicantIncome', '') }}" required>
+                                           placeholder="e.g. 50000" value="{{ form_values.get('ApplicantIncome', '') }}" required>
                                 </div>
                                 <small class="text-muted">Primary monthly income before taxes.</small>
                             </div>
 
                             <!-- Coapplicant Income -->
                             <div class="col-md-6">
-                                <label for="CoapplicantIncome" class="form-label">Co-applicant Monthly Income (USD / Standard Units) <span class="text-danger">*</span></label>
+                                <label for="CoapplicantIncome" class="form-label">Co-applicant Monthly Income (INR ₹) <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <span class="input-group-text">$</span>
+                                    <span class="input-group-text">₹</span>
                                     <input type="number" step="any" min="0" class="form-control" id="CoapplicantIncome" name="CoapplicantIncome"
-                                           placeholder="e.g. 1500 (or 0 if none)" value="{{ form_values.get('CoapplicantIncome', '0') }}" required>
+                                           placeholder="e.g. 15000 (or 0 if none)" value="{{ form_values.get('CoapplicantIncome', '0') }}" required>
                                 </div>
                                 <small class="text-muted">Enter 0 if there is no co-applicant.</small>
                             </div>
@@ -138,13 +138,13 @@
                         <div class="row g-3">
                             <!-- Loan Amount -->
                             <div class="col-md-4">
-                                <label for="LoanAmount" class="form-label">Requested Loan Amount (in Thousands) <span class="text-danger">*</span></label>
+                                <label for="LoanAmount" class="form-label">Requested Loan Amount (in Thousands ₹) <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <span class="input-group-text">k$</span>
+                                    <span class="input-group-text">₹ '000</span>
                                     <input type="number" step="any" min="1" class="form-control" id="LoanAmount" name="LoanAmount"
-                                           placeholder="e.g. 128 (= $128,000)" value="{{ form_values.get('LoanAmount', '') }}" required>
+                                           placeholder="e.g. 128 (= ₹1,28,000)" value="{{ form_values.get('LoanAmount', '') }}" required>
                                 </div>
-                                <small class="text-muted">Value in thousands (e.g. 150 for $150,000).</small>
+                                <small class="text-muted">Value in thousands (e.g. 150 for ₹1,50,000 / 1.5 Lakhs).</small>
                             </div>
 
                             <!-- Loan Term -->
